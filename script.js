@@ -39,8 +39,8 @@ const options = [
 // Estado da aplicação
 let currentStep = 0;
 let answers = {};
-let userName = localStorage.getItem("userName") || "";
-let userEmail = localStorage.getItem("userEmail") || "";
+let userName = "";
+let userEmail = "";
 
 // Elementos do DOM
 const form = document.getElementById("questionForm");
@@ -53,37 +53,27 @@ const nextBtn = document.getElementById("nextBtn");
 const nameInput = document.getElementById("name");
 const emailInput = document.getElementById("email");
 
-// Inicialização
-document.addEventListener("DOMContentLoaded", () => {
-    // Carregar dados salvos
-    answers = JSON.parse(localStorage.getItem("userAnswers") || "{}");
-    nameInput.value = userName;
-    emailInput.value = userEmail;
-    updateProgress();
-    
-    // Eventos
-    backBtn.addEventListener("click", handleBack);
-    nextBtn.addEventListener("click", handleNext);
-    document.getElementById("sendEmailBtn").addEventListener("click", handleSendEmail);
-    document.getElementById("resetBtn").addEventListener("click", handleReset);
-});
-
 // Funções auxiliares
 function updateProgress() {
     const progress = (currentStep / (questions.length + 1)) * 100;
     progressBar.style.width = `${progress}%`;
 }
 
-function showToast(title, message, isError = false) {
+function showToast(title, message) {
     alert(`${title}\n${message}`);
 }
 
 function showStep(step) {
+    // Esconder todos os passos
     initialStep.style.display = "none";
     questionTemplate.style.display = "none";
     resultsStep.style.display = "none";
+    
+    // Mostrar/esconder botão voltar
     backBtn.style.display = step === 0 ? "none" : "block";
+    nextBtn.textContent = step === questions.length ? "Ver Resultados" : "Próximo";
 
+    // Mostrar o passo atual
     if (step === 0) {
         initialStep.style.display = "block";
     } else if (step <= questions.length) {
@@ -99,11 +89,14 @@ function showStep(step) {
 
 function displayQuestion(index) {
     const question = questions[index];
-    questionTemplate.querySelector(".question-text").textContent = `${index + 1}. ${question}`;
+    const questionText = questionTemplate.querySelector(".question-text");
+    questionText.textContent = `${index + 1}. ${question}`;
     
     // Limpar seleção anterior
     const radios = questionTemplate.querySelectorAll('input[type="radio"]');
-    radios.forEach(radio => radio.checked = false);
+    radios.forEach(radio => {
+        radio.checked = false;
+    });
     
     // Selecionar resposta salva se existir
     if (answers[index]) {
@@ -118,7 +111,7 @@ function handleNext() {
         userEmail = emailInput.value;
         
         if (!userName || !userEmail) {
-            showToast("Campos obrigatórios", "Por favor, preencha seu nome e email para continuar.", true);
+            showToast("Campos obrigatórios", "Por favor, preencha seu nome e email para continuar.");
             return;
         }
 
@@ -127,7 +120,7 @@ function handleNext() {
     } else if (currentStep <= questions.length) {
         const selectedAnswer = questionTemplate.querySelector('input[name="answer"]:checked');
         if (!selectedAnswer) {
-            showToast("Resposta necessária", "Por favor, selecione uma resposta para continuar.", true);
+            showToast("Resposta necessária", "Por favor, selecione uma resposta para continuar.");
             return;
         }
         
@@ -135,17 +128,17 @@ function handleNext() {
         localStorage.setItem("userAnswers", JSON.stringify(answers));
     }
 
-    currentStep++;
-    showStep(currentStep);
+    if (currentStep === questions.length) {
+        showResults();
+    } else {
+        currentStep++;
+        showStep(currentStep);
+    }
 }
 
 function handleBack() {
     if (currentStep > 0) {
         currentStep--;
-        if (currentStep > 0) {
-            delete answers[currentStep - 1];
-            localStorage.setItem("userAnswers", JSON.stringify(answers));
-        }
         showStep(currentStep);
     }
 }
@@ -188,6 +181,9 @@ function showResults() {
     document.getElementById("resultTitle").textContent = result.title;
     document.getElementById("resultMessage").textContent = result.message;
     document.getElementById("scoreText").textContent = `Sua pontuação: ${score} pontos`;
+    
+    resultsStep.style.display = "block";
+    questionTemplate.style.display = "none";
 }
 
 function formatAnswersForEmail(score, result) {
@@ -227,5 +223,26 @@ function handleReset() {
     showStep(0);
 }
 
-// Iniciar mostrando o primeiro passo
-showStep(0);
+// Inicialização
+document.addEventListener("DOMContentLoaded", () => {
+    // Carregar dados salvos
+    const savedAnswers = localStorage.getItem("userAnswers");
+    if (savedAnswers) {
+        answers = JSON.parse(savedAnswers);
+    }
+    
+    userName = localStorage.getItem("userName") || "";
+    userEmail = localStorage.getItem("userEmail") || "";
+    
+    nameInput.value = userName;
+    emailInput.value = userEmail;
+
+    // Adicionar eventos
+    nextBtn.addEventListener("click", handleNext);
+    backBtn.addEventListener("click", handleBack);
+    document.getElementById("sendEmailBtn").addEventListener("click", handleSendEmail);
+    document.getElementById("resetBtn").addEventListener("click", handleReset);
+
+    // Mostrar primeiro passo
+    showStep(0);
+});
