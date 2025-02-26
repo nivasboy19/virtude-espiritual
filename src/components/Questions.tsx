@@ -68,11 +68,21 @@ const getResultMessage = (score: number) => {
 
 export function Questions() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [name, setName] = useState(() => localStorage.getItem("userName") || "");
+  const [email, setEmail] = useState(() => localStorage.getItem("userEmail") || "");
+  const [answers, setAnswers] = useState<Record<number, string>>(() => {
+    const savedAnswers = localStorage.getItem("userAnswers");
+    return savedAnswers ? JSON.parse(savedAnswers) : {};
+  });
   const [showResults, setShowResults] = useState(false);
   const { toast } = useToast();
+
+  // Salva os dados no localStorage sempre que houver mudanças
+  useEffect(() => {
+    localStorage.setItem("userName", name);
+    localStorage.setItem("userEmail", email);
+    localStorage.setItem("userAnswers", JSON.stringify(answers));
+  }, [name, email, answers]);
 
   const handleNext = () => {
     if (currentStep === 0 && (!name || !email)) {
@@ -102,11 +112,32 @@ export function Questions() {
   };
 
   const handleBack = () => {
-    // Remove a resposta da questão atual antes de voltar
     const newAnswers = { ...answers };
     delete newAnswers[currentStep - 1];
     setAnswers(newAnswers);
     setCurrentStep((prev) => prev - 1);
+  };
+
+  const formatAnswersForEmail = (score: number, result: { title: string; message: string }) => {
+    let emailContent = `Nome: ${name}\n\n`;
+    emailContent += `Resultado: ${result.title}\n`;
+    emailContent += `Pontuação: ${score} pontos\n\n`;
+    emailContent += "Respostas:\n\n";
+
+    questions.forEach((question, index) => {
+      const answer = answers[index];
+      const option = options.find(opt => opt.value === answer);
+      emailContent += `${index + 1}. ${question}\nResposta: ${option?.label || 'Não respondida'}\n\n`;
+    });
+
+    return emailContent;
+  };
+
+  const handleSendEmail = (score: number, result: { title: string; message: string }) => {
+    const emailContent = formatAnswersForEmail(score, result);
+    const emailSubject = "Resultados da Avaliação de Virtudes Espirituais";
+    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailContent)}`;
+    window.location.href = mailtoLink;
   };
 
   const calculateResults = () => {
@@ -118,6 +149,17 @@ export function Questions() {
       const option = options.find((opt) => opt.value === answer);
       return total + (option?.points || 0);
     }, 0);
+  };
+
+  const handleReset = () => {
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userAnswers");
+    setCurrentStep(0);
+    setAnswers({});
+    setShowResults(false);
+    setName("");
+    setEmail("");
   };
 
   const progress = (currentStep / (questions.length + 1)) * 100;
@@ -134,16 +176,21 @@ export function Questions() {
           <div className="p-6 bg-secondary rounded-lg">
             <p className="text-2xl font-medium">Sua pontuação: {score} pontos</p>
           </div>
-          <Button
-            onClick={() => {
-              setCurrentStep(0);
-              setAnswers({});
-              setShowResults(false);
-            }}
-            className="mt-4"
-          >
-            Começar Novamente
-          </Button>
+          <div className="space-y-4">
+            <Button
+              onClick={() => handleSendEmail(score, result)}
+              className="w-full"
+              variant="outline"
+            >
+              Enviar Resultados por Email
+            </Button>
+            <Button
+              onClick={handleReset}
+              className="w-full"
+            >
+              Começar Novamente
+            </Button>
+          </div>
         </div>
       </div>
     );
