@@ -101,6 +101,14 @@ export function Questions() {
     setCurrentStep((prev) => prev + 1);
   };
 
+  const handleBack = () => {
+    // Remove a resposta da questão atual antes de voltar
+    const newAnswers = { ...answers };
+    delete newAnswers[currentStep - 1];
+    setAnswers(newAnswers);
+    setCurrentStep((prev) => prev - 1);
+  };
+
   const calculateResults = () => {
     setShowResults(true);
   };
@@ -209,7 +217,7 @@ export function Questions() {
         {currentStep > 0 && (
           <Button
             variant="outline"
-            onClick={() => setCurrentStep((prev) => prev - 1)}
+            onClick={handleBack}
           >
             Voltar
           </Button>
