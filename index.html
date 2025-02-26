@@ -1,18 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>virtude-espiritual</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
-    <meta property="og:image" content="/og-image.png" />
-  </head>
 
-  <body>
-    <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de Virtudes Espirituais</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <form id="questionForm" class="question-form">
+            <!-- Tela inicial -->
+            <div class="step" id="initialStep">
+                <h1>Avaliação de Virtudes Espirituais</h1>
+                <div class="form-group">
+                    <label for="name">Nome</label>
+                    <input type="text" id="name" placeholder="Digite seu nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Digite seu email" required>
+                </div>
+            </div>
+
+            <!-- Template para questões -->
+            <div class="step question-step" id="questionTemplate" style="display: none;">
+                <h2 class="question-text"></h2>
+                <div class="options-group">
+                    <div class="option">
+                        <input type="radio" name="answer" value="A" id="optionA">
+                        <label for="optionA">Sempre</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="answer" value="B" id="optionB">
+                        <label for="optionB">Frequentemente</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="answer" value="C" id="optionC">
+                        <label for="optionC">Às vezes</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="answer" value="D" id="optionD">
+                        <label for="optionD">Raramente</label>
+                    </div>
+                    <div class="option">
+                        <input type="radio" name="answer" value="E" id="optionE">
+                        <label for="optionE">Nunca</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tela de resultados -->
+            <div class="step" id="resultsStep" style="display: none;">
+                <h1 id="resultTitle"></h1>
+                <p id="resultMessage"></p>
+                <div class="score-box">
+                    <p id="scoreText"></p>
+                </div>
+                <div class="button-group">
+                    <button type="button" id="sendEmailBtn" class="button outline">
+                        Enviar Resultados por Email
+                    </button>
+                    <button type="button" id="resetBtn" class="button">
+                        Começar Novamente
+                    </button>
+                </div>
+            </div>
+
+            <div class="button-group" id="navigationButtons">
+                <button type="button" id="backBtn" class="button outline" style="display: none;">
+                    Voltar
+                </button>
+                <button type="button" id="nextBtn" class="button">
+                    Próximo
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
 </html>
